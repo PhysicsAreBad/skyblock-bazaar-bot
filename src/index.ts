@@ -16,7 +16,7 @@ async function main() {
     const client = new Client(config.hypixelAPIToken)
 
     const database = open({
-        path: 'trading-database',
+        path: 'trading_database',
     });
 
     const discordBot = new DiscordBot(database, config);
