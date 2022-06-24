@@ -1,9 +1,3 @@
-export type ServerData = {
-    alertChannel: string,
-    tickerChannel: string,
-    trackedItems: string[]
-}
-
 export function getFormattedDate() {
     let d = new Date();
 
@@ -12,9 +6,9 @@ export function getFormattedDate() {
     return dString;
 }
 
-export type Config = {
-    discordToken: string,
-    clientID: string,
-    hypixelAPIToken: string
+export function mapName(displayName: string) {
+    switch(displayName) {
+        
+    }
 }
 

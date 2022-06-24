@@ -5,7 +5,7 @@ import { promises as fs } from 'fs'
 import { open } from 'lmdb'
 
 import DiscordBot from './discord-bot'
-import { getFormattedDate, Config } from './bazaar-utils'
+import { getFormattedDate } from './bazaar-utils'
 
 main();
 
@@ -28,7 +28,7 @@ async function main() {
         console.log(`Updating Ticker -  ${getFormattedDate()}`)
 
         discordBot.updateTicker(bazaarData)
-
+        
         await new Promise(r => setTimeout(r, 60000));
     }
 }
