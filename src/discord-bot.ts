@@ -22,7 +22,7 @@ class DiscordBot {
         console.log("Starting Discord Bot")
     
         this.client = new Client({
-            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS]
+            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS]
         });
 
         this.client.login(config.discordToken)
