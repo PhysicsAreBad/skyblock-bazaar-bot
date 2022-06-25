@@ -3,22 +3,25 @@ import { CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions }
 
 import { RootDatabase } from 'lmdb';
 
+import { getKeyforValue } from '../bazaar-utils'
+import itemNames from '../items.json'
+
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
         .setName("ticker")
-        .setDescription("Add or subtract products to the ticker updates")
+        .setDescription("Add or subtract items to the ticker updates")
         .addSubcommand(command =>
-            command.setName('add').setDescription('Add a product').addStringOption(option => option
+            command.setName('add').setDescription('Add an item').addStringOption(option => option
                 .setName("name")
-                .setDescription("Product Name")
+                .setDescription("Item Name")
                 .setRequired(true)))
         .addSubcommand(command =>
-            command.setName('remove').setDescription('Remove a product').addStringOption(option => option
+            command.setName('remove').setDescription('Remove an item').addStringOption(option => option
                 .setName("name")
-                .setDescription("Product Name")
+                .setDescription("Item Name")
                 .setRequired(true)))
         .addSubcommand(command => 
-            command.setName('list').setDescription('Lists all the tracked products')
+            command.setName('list').setDescription('Lists all the tracked items')
         ),
 	async execute(interaction: CommandInteraction, database: RootDatabase) {
         if (interaction.guildId == null) return;
@@ -47,25 +50,83 @@ const command: DiscordCommand = {
         }
 
         let productName: string
+        let formattedName: string
         switch (options.getSubcommand()) {
             case 'add':
                 productName = options.getString("name", true)
+
+                formattedName = productName;
+
+                if (!(productName in itemNames)) {
+                    const name = getKeyforValue(productName)
+                    if (name != undefined) {
+                        productName = name
+                    } else {
+                        const embed = new MessageEmbed().setTitle("Error")
+                            .setColor('#FF0000')
+                            .setDescription('That is not a valid item!')
+                            .setTimestamp()
+                        interaction.reply({ embeds: [embed], ephemeral: true})
+                        return;
+                    }
+                } else {
+                    formattedName = itemNames[productName as keyof typeof itemNames]
+                }
+
                 data.trackedItems.push(productName)
                 await database.put(interaction.guildId, data)
-                interaction.reply(`Added item ${productName} to the tracked products list`)
+                const embed = new MessageEmbed().setTitle("Added Item")
+                            .setColor('#00FF00')
+                            .setDescription(`Added item ${formattedName} to the tracked items list`)
+                            .setTimestamp()
+                interaction.reply({ embeds: [embed], ephemeral: true})
                 break
             case 'remove':
                 productName = options.getString("name", true)
+
+                formattedName = productName;
+
+                if (!(productName in itemNames)) {
+                    const name = getKeyforValue(productName)
+                    if (name != undefined) {
+                        productName = name
+                    } else {
+                        const embed = new MessageEmbed().setTitle("Error")
+                            .setColor('#FF0000')
+                            .setDescription('That is not a valid item!')
+                            .setTimestamp()
+                        interaction.reply({ embeds: [embed], ephemeral: true})
+                        return;
+                    }
+                } else {
+                    formattedName = itemNames[productName as keyof typeof itemNames]
+                }
+
                 if (data.trackedItems.includes(productName)) {
                     data.trackedItems.splice(data.trackedItems.indexOf(productName))
                     await database.put(interaction.guildId, data)
-                    interaction.reply(`Removed item ${productName} from the tracked products list`)
+                    const embed = new MessageEmbed().setTitle("Removed Item")
+                            .setColor('#00FF00')
+                            .setDescription(`Removed item ${formattedName} from the tracked items list`)
+                            .setTimestamp()
+                    interaction.reply({ embeds: [embed], ephemeral: true})
                 } else {
-                    interaction.reply(`${productName} was not being tracked!`)
+                    const embed = new MessageEmbed().setTitle("Error")
+                            .setColor('#FF0000')
+                            .setDescription(`${formattedName} was not being tracked!`)
+                            .setTimestamp()
+                    interaction.reply({ embeds: [embed], ephemeral: true})
                 }
                 break
             case 'list':
-                interaction.reply(`Current Tracked Products: ${data.trackedItems}`)
+                const embed2 = new MessageEmbed().setTitle("Items being tracked")
+                            .setColor('#0000FF')
+                            .setDescription(data.trackedItems.map(item => itemNames[item as keyof typeof itemNames])
+                            .reduce((previousValue, currentValue) => {
+                                return previousValue += ", " + currentValue;
+                            }))
+                            .setTimestamp()
+                interaction.reply({ embeds: [embed2], ephemeral: true})
         }
 	},
 };

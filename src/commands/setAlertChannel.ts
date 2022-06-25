@@ -44,7 +44,8 @@ const command: DiscordCommand = {
                 tickerChannel: channel.id,
                 alertChannel: channel.id,
                 controlRole: undefined,
-                trackedItems: []
+                trackedItems: [],
+                alerts: []
             }
             await database.put(interaction.guildId, data)
             console.log(`Created data for guild ${interaction.guildId}`) 

@@ -27,7 +27,7 @@ async function main() {
 
         console.log(`Updating Ticker -  ${getFormattedDate()}`)
 
-        discordBot.updateTicker(bazaarData)
+        discordBot.updateServers(bazaarData)
         
         await new Promise(r => setTimeout(r, 60000));
     }

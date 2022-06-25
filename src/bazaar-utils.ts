@@ -1,3 +1,5 @@
+import itemList from './items.json'
+
 export function getFormattedDate() {
     let d = new Date();
 
@@ -6,9 +8,11 @@ export function getFormattedDate() {
     return dString;
 }
 
-export function mapName(displayName: string) {
-    switch(displayName) {
-        
+export function getKeyforValue(value: string): string | undefined {
+    for (let key in itemList) {
+        if(itemList[key as keyof typeof itemList] == value) {
+            return key;
+        }
     }
+    return undefined;
 }
-

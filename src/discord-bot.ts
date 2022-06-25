@@ -11,6 +11,8 @@ import { getFormattedDate } from './bazaar-utils'
 import { Components } from '@zikeji/hypixel'
 import { ResultObject } from '@zikeji/hypixel/dist/util/ResultObject'
 
+import itemNames from './items.json'
+
 class DiscordBot {
     client: Client
     database: RootDatabase
@@ -36,8 +38,6 @@ class DiscordBot {
             for (const file of commandFiles) {
 	            const filePath = path.join(commandsPath, file);
 	            const command: DiscordCommand = await require(filePath).default;
-	            // Set a new item in the Collection
-	            // With the key as the command name and the value as the exported module
 	            this.commands.set(command.data.name, command);
             }
 
@@ -68,8 +68,6 @@ class DiscordBot {
 
             if (command == null) return;
 
-            console.log(`Processing Command ${command.data.name}`)
-
 	        try {
 		        await command.execute(interaction, this.database);
 	        } catch (error) {
@@ -84,7 +82,7 @@ class DiscordBot {
         })
     }
 
-    updateTicker(products: ResultObject<Components.Schemas.SkyBlockBazaarResponse, ["products"]>) {
+    updateServers(products: ResultObject<Components.Schemas.SkyBlockBazaarResponse, ["products"]>) {
         this.database.getKeys().asArray.forEach(async server => {
             const data: ServerData = this.database.get(server)
             if (data.trackedItems.length == 0) return;
@@ -95,14 +93,46 @@ class DiscordBot {
                 textChannel.send(`TICKER UPDATE FOR ${getFormattedDate()}`)
                 data.trackedItems.forEach(item => {
                     const embed = new MessageEmbed()
-                        .setTitle(item)
+                        .setTitle(itemNames[item as keyof typeof itemNames])
                         .setDescription(`Bazaar Ticker`)
                         .addFields(
-                            {name: 'Buy Price:', value: `${products[item].quick_status.buyPrice}`, inline: true},
-                            {name: 'Sell Price:', value: `${products[item].quick_status.sellPrice}`, inline: true}
+                            {name: 'Buy Order Price:', value: `${products[item].quick_status.sellPrice}`, inline: true},
+                            {name: 'Sell Order Price:', value: `${products[item].quick_status.buyOrders}`, inline: true}
                         )
                         .setTimestamp()
                     textChannel.send({embeds: [embed]})
+                })
+            }
+
+            const alertChannel = await this.client.channels.fetch(data.alertChannel);
+            if (alertChannel != null) {
+                const textChannel = alertChannel as TextChannel
+                data.alerts.forEach(alert => {
+                    if (alert.isBuy) {
+                        if (products[alert.itemName].quick_status.sellPrice <= alert.amount) {
+                            if (data.controlRole)
+                                textChannel.send(`<@&${data.controlRole}>`)
+                            const embed = new MessageEmbed()
+                                .setTitle(`ALERT`)
+                                .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or below ${alert.amount}`)
+                                .addFields(
+                                    {name: 'Current Buy Price:', value: `${products[alert.itemName].quick_status.sellPrice}`, inline: true}
+                                )
+                                .setTimestamp()
+                            textChannel.send({embeds: [embed]})
+                        }
+                    } else {
+                        if (products[alert.itemName].quick_status.buyPrice >= alert.amount) {
+                            const embed = new MessageEmbed()
+                                .setTitle(`ALERT`)
+                                .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or above ${alert.amount}`)
+                                .addFields(
+                                    {name: 'Current Sell Price:', value: `${products[alert.itemName].quick_status.buyPrice}`, inline: true}
+                                )
+                                .setTimestamp()
+                            textChannel.send({embeds: [embed]})
+                        }
+                    }
                 })
             }
         });
