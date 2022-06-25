@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "yarn build && cd dist && node index.js"
+    "start": "cd dist && node index.js"
   },
   "author": "physicsarebad",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "@zikeji/hypixel": "^3.1.1",
     "discord-api-types": "^0.35.0",
     "discord.js": "^13.8.1",
+    "dotenv": "^16.0.1",
     "lmdb": "^2.5.3",
     "uuid": "^8.3.2"
   },

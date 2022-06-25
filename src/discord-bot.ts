@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -17,14 +19,14 @@ class DiscordBot {
     database: RootDatabase
     commands: Collection<string, DiscordCommand>
 
-    constructor(database: RootDatabase, config: Config) {
+    constructor(database: RootDatabase) {
         console.log("Starting Discord Bot")
     
         this.client = new Client({
             intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS]
         });
 
-        this.client.login(config.discordToken)
+        this.client.login(process.env.DISCORD_TOKEN)
 
         this.database = database
 
@@ -40,7 +42,7 @@ class DiscordBot {
 	            this.commands.set(command.data.name, command);
             }
 
-            this.addSlashCommands(config.discordToken, config.clientID)
+            this.addSlashCommands()
         }
         initCommands()
 
@@ -137,16 +139,16 @@ class DiscordBot {
         });
     }
 
-    private addSlashCommands(token: string, clientID: string) {
+    private addSlashCommands() {
         const commandData: any[] = []
 
         for (const command of this.commands.values()) {
             commandData.push(command.data.toJSON())
         }
 
-        const rest = new REST({ version: '10' }).setToken(token);
+        const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN as string);
 
-        rest.put(Routes.applicationCommands(clientID), {
+        rest.put(Routes.applicationCommands(process.env.CLIENTID as string), {
             body: commandData
         })
     }

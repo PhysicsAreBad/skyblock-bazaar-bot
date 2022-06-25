@@ -1,5 +1,0 @@
-{
-    "discordToken": "get from discord dev page",
-    "clientID": "get from discord dev page",
-    "hypixelAPIToken": "do /api on hypixel to generate an api token"
-}

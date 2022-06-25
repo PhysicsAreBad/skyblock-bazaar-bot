@@ -12,7 +12,7 @@ For the intended way to play
 ### Self Hosting
 1. Install NodeJS and Yarn
 2. Run `yarn && yarn build`
-3. Input the API keys into config.json.example, move it into the dist folder, and remove the .example extension
+3. Input the API keys into process.env, move it into the dist folder, and remove the .example extension
 4. Run `yarn start` from the main directory!
 5. Celebrate your self hosted bazaar goodness
 

@@ -1,6 +1,6 @@
-import { Client } from '@zikeji/hypixel'
+import 'dotenv/config'
 
-import { promises as fs } from 'fs'
+import { Client } from '@zikeji/hypixel'
 
 import { open } from 'lmdb'
 
@@ -10,15 +10,14 @@ import { getFormattedDate } from './bazaar-utils'
 main();
 
 async function main() {
-    const config: Config = JSON.parse(await fs.readFile('config.json', 'utf-8'))
     console.log("Bazaar Tracking Bot v1")
-    const client = new Client(config.hypixelAPIToken)
+    const client = new Client(process.env.HYPIXEL_TOKEN as string)
 
     const database = open({
         path: 'trading_database',
     });
 
-    const discordBot = new DiscordBot(database, config);
+    const discordBot = new DiscordBot(database);
 
     console.log('Starting Hypixel API scanner')
     while (true) {
