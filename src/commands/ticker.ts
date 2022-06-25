@@ -31,7 +31,7 @@ const command: DiscordCommand = {
             const embed = new MessageEmbed()
                 .setTitle('Error!')
                 .setColor('#ff0000')
-                .setDescription('You must set your ticker channel before using this command! Use /settickerchannel')
+                .setDescription('You must set your ticker channel before using this command! Use `/settickerchannel`')
 
             interaction.reply({embeds: [embed], ephemeral: true})
             return;
@@ -42,7 +42,7 @@ const command: DiscordCommand = {
         || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
             const embed = new MessageEmbed().setTitle("Error")
                 .setColor('#FF0000')
-                .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use /setrole to set the role for bot use.')
+                .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
                 .setTimestamp()
 
             interaction.reply({ embeds: [embed], ephemeral: true})
@@ -103,7 +103,7 @@ const command: DiscordCommand = {
                 }
 
                 if (data.trackedItems.includes(productName)) {
-                    data.trackedItems.splice(data.trackedItems.indexOf(productName))
+                    data.trackedItems.splice(data.trackedItems.indexOf(productName), 1)
                     await database.put(interaction.guildId, data)
                     const embed = new MessageEmbed().setTitle("Removed Item")
                             .setColor('#00FF00')
@@ -121,10 +121,10 @@ const command: DiscordCommand = {
             case 'list':
                 const embed2 = new MessageEmbed().setTitle("Items being tracked")
                             .setColor('#a810b3')
-                            .setDescription(data.trackedItems.map(item => itemNames[item as keyof typeof itemNames])
+                            .setDescription(data.trackedItems.length > 1 ? data.trackedItems.map(item => itemNames[item as keyof typeof itemNames])
                             .reduce((previousValue, currentValue) => {
                                 return previousValue += ", " + currentValue;
-                            }))
+                            }) : (data.trackedItems.length == 1 ? itemNames[data.trackedItems.toString() as keyof typeof itemNames] : "Nothing!"))
                             .setTimestamp()
                 interaction.reply({ embeds: [embed2], ephemeral: true})
         }

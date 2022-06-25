@@ -21,7 +21,7 @@ const command: DiscordCommand = {
                 || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
                 const embed = new MessageEmbed().setTitle("Error")
                     .setColor('#FF0000')
-                    .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use /setrole to set the role for bot use.')
+                    .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
                     .setTimestamp()
 
                 interaction.reply({ embeds: [embed], ephemeral: true})
@@ -33,7 +33,7 @@ const command: DiscordCommand = {
             if (!interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
                 const embed = new MessageEmbed().setTitle("Error")
                     .setColor('#FF0000')
-                    .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use /setrole to set the role for bot use.')
+                    .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
                     .setTimestamp()
 
                 interaction.reply({ embeds: [embed], ephemeral: true})

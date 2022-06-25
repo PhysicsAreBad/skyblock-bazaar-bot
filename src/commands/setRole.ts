@@ -30,7 +30,7 @@ const command: DiscordCommand = {
             const embed = new MessageEmbed()
                 .setTitle('Error!')
                 .setColor('#ff0000')
-                .setDescription('You must set your ticker channel before using this command! Use /settickerchannel')
+                .setDescription('You must set your ticker channel before using this command! Use `/settickerchannel`')
 
             interaction.reply({embeds: [embed], ephemeral: true})
             return;
