@@ -1,13 +1,13 @@
-### Skyblock Bazaar Tracker
+# Skyblock Bazaar Tracker
 
 For the intended way to play
 
 ## How to add to your server
 
-# The Easy Way
+### The Easy Way
 Hosted bot comming soon!
 
-# Self Hosting
+### Self Hosting
 1. Install NodeJS and Yarn
 2. Run `yarn && yarn build`
 3. Input the API keys into config.json.example, move it into the dist folder, and remove the .example extension
