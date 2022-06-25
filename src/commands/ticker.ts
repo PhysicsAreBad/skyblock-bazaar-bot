@@ -120,7 +120,7 @@ const command: DiscordCommand = {
                 break
             case 'list':
                 const embed2 = new MessageEmbed().setTitle("Items being tracked")
-                            .setColor('#0000FF')
+                            .setColor('#a810b3')
                             .setDescription(data.trackedItems.map(item => itemNames[item as keyof typeof itemNames])
                             .reduce((previousValue, currentValue) => {
                                 return previousValue += ", " + currentValue;

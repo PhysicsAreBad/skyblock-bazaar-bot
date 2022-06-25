@@ -105,7 +105,7 @@ const command: DiscordCommand = {
                 interaction.reply({ embeds: [embed], ephemeral: true})
                 break
             case 'remove':
-                let givenUUID = options.getString("uuid", true)
+                let givenUUID = options.getString("id", true)
 
                 if (data.alerts.map(entry => entry.uuid).find(entry => entry == givenUUID)) {
                     data.alerts = data.alerts.splice(data.alerts.map(entry => entry.uuid).indexOf(givenUUID))
@@ -124,12 +124,12 @@ const command: DiscordCommand = {
                 break
             case 'list':
                 const embed2 = new MessageEmbed().setTitle("Active Alerts")
-                            .setColor('#0000FF')
+                            .setColor('#a810b3')
                             .setFields(data.alerts.map(entry => {
                                 return {
                                     name: `${entry.isBuy ? 'Buy' : 'Sell'} ${itemNames[entry.itemName as keyof typeof itemNames]} ${entry.amount}`,
                                     value: entry.uuid,
-                                    inline: true
+                                    inline: false
                                 }
                             }))
                             .setTimestamp()

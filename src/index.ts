@@ -11,8 +11,7 @@ main();
 
 async function main() {
     const config: Config = JSON.parse(await fs.readFile('config.json', 'utf-8'))
-    console.log("Trading Bot v1")
-    //TODO: Key goes here
+    console.log("Bazaar Tracking Bot v1")
     const client = new Client(config.hypixelAPIToken)
 
     const database = open({

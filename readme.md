@@ -2,10 +2,12 @@
 
 For the intended way to play
 
+[Discord](https://discord.gg/JbUYwMDKAX)
+
 ## How to add to your server
 
 ### The Easy Way
-Hosted bot comming soon!
+[Hosted Bot](https://discord.com/api/oauth2/authorize?client_id=989871150471454752&permissions=3072&scope=bot%20applications.commands)
 
 ### Self Hosting
 1. Install NodeJS and Yarn
@@ -27,8 +29,10 @@ Updates every minute
 
 Alerts will constant ping every time a condition is met
 
+### Deleting Alerts
+
+Each alert is assigned a UUID so users can easier create multiple alerts for an item. As such, when using `/alert remove` you must specify which alert to remove via it's UUID. You can see the UUID of your specified alerts using `/alert list`
+
 ## Wanna Help?
 
 Submit bug reports, contribute code, or offer me a job :p
-
-Discord Server coming soon

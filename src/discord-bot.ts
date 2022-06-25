@@ -1,4 +1,4 @@
-import {promises as fs} from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
 import { Client, TextChannel, Intents, MessageEmbed, Collection } from 'discord.js'
@@ -7,7 +7,6 @@ import { Routes } from 'discord-api-types/v10'
 
 import { RootDatabase } from 'lmdb'
 
-import { getFormattedDate } from './bazaar-utils'
 import { Components } from '@zikeji/hypixel'
 import { ResultObject } from '@zikeji/hypixel/dist/util/ResultObject'
 
@@ -45,21 +44,6 @@ class DiscordBot {
         }
         initCommands()
 
-        this.client.on('ready', () => {
-            database.getKeys().forEach(async server => {
-                const data: ServerData = database.get(server);
-
-                const channel = await this.client.channels.fetch(data.alertChannel);
-                if (channel != null) {
-                    const embed = new MessageEmbed().setTitle("Online!")
-                        .setDescription(`The Bazaar Tracker logged on at ${getFormattedDate()}`)
-                        .setTimestamp();
-
-                    (channel as TextChannel).send({embeds: [embed]})
-                }
-            })
-        })
-
         this.client.on('interactionCreate', async interaction => {
             if (!interaction.isCommand()) return;
             if (interaction.guildId == null) return;
@@ -90,8 +74,8 @@ class DiscordBot {
             const channel = await this.client.channels.fetch(data.tickerChannel)
             if (channel != null) {
                 const textChannel = channel as TextChannel
-                textChannel.send(`TICKER UPDATE FOR ${getFormattedDate()}`)
-                data.trackedItems.forEach(item => {
+                textChannel.send(`TICKER UPDATE`)
+                data.trackedItems.forEach(async item => {
                     const embed = new MessageEmbed()
                         .setTitle(itemNames[item as keyof typeof itemNames])
                         .setDescription(`Bazaar Ticker`)
@@ -100,14 +84,17 @@ class DiscordBot {
                             {name: 'Sell Order Price:', value: `${products[item].quick_status.buyPrice}`, inline: true}
                         )
                         .setTimestamp()
+                        .setColor('#f0cc05')
                     textChannel.send({embeds: [embed]})
+                    //Wait so bot does not get rate limited
+                    await new Promise(r => setTimeout(r, 20));
                 })
             }
 
             const alertChannel = await this.client.channels.fetch(data.alertChannel);
             if (alertChannel != null) {
                 const textChannel = alertChannel as TextChannel
-                data.alerts.forEach(alert => {
+                data.alerts.forEach(async alert => {
                     if (alert.isBuy) {
                         if (products[alert.itemName].quick_status.sellPrice <= alert.amount) {
                             if (data.controlRole)
@@ -119,7 +106,12 @@ class DiscordBot {
                                     {name: 'Current Buy Price:', value: `${products[alert.itemName].quick_status.sellPrice}`, inline: true}
                                 )
                                 .setTimestamp()
-                            textChannel.send({embeds: [embed]})
+                                .setColor('#f0cc05')
+                            try {
+                                textChannel.send({embeds: [embed]})
+                            } catch (e) {
+                                console.error(e)
+                            }
                         }
                     } else {
                         if (products[alert.itemName].quick_status.buyPrice >= alert.amount) {
@@ -130,9 +122,16 @@ class DiscordBot {
                                     {name: 'Current Sell Price:', value: `${products[alert.itemName].quick_status.buyPrice}`, inline: true}
                                 )
                                 .setTimestamp()
-                            textChannel.send({embeds: [embed]})
+                                .setColor('#f0cc05')
+                            try {
+                                textChannel.send({embeds: [embed]})
+                            } catch (e) {
+                                console.error(e)
+                            }
                         }
                     }
+                    //Wait so bot does not get rate limited
+                    await new Promise(r => setTimeout(r, 20));
                 })
             }
         });
