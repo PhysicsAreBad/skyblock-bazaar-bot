@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
-
-import { RootDatabase } from 'lmdb';
+import { Collection, Document } from 'mongodb';
 
 import { v4 as generateUUID } from 'uuid'
 
@@ -35,11 +34,11 @@ const command: DiscordCommand = {
         .addSubcommand(command => 
             command.setName('list').setDescription('Lists all the alerts')
         ),
-	async execute(interaction: CommandInteraction, database: RootDatabase) {
+	async execute(interaction: CommandInteraction, database: Collection<Document>) {
         if (interaction.guildId == null) return;
 
         const options = interaction.options;
-        if (!database.getKeys().asArray.includes(interaction.guildId)) {
+        if (!(await database.findOne({ serverID: interaction.guildId }))) {
             const embed = new MessageEmbed()
                 .setTitle('Error!')
                 .setColor('#ff0000')
@@ -48,7 +47,7 @@ const command: DiscordCommand = {
             interaction.reply({embeds: [embed], ephemeral: true})
             return;
         }
-        const data: ServerData = database.get(interaction.guildId)
+        const data: ServerData = await database.findOne({ serverID: interaction.guildId }) as unknown as ServerData
 
         if (!(interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR) 
         || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
@@ -94,7 +93,7 @@ const command: DiscordCommand = {
                     isBuy: isBuy
                 })
 
-                await database.put(interaction.guildId, data)
+                await database.replaceOne({ serverID: interaction.guildId }, data)
                 const embed = new MessageEmbed().setTitle("Added Alert")
                             .setColor('#00FF00')
                             .addField('UUID', uuid, true)
@@ -114,7 +113,7 @@ const command: DiscordCommand = {
                         .setDescription(`Deleted alert ${givenUUID}`)
                         .setTimestamp()
                     interaction.reply({ embeds: [embed], ephemeral: true})
-                    await database.put(interaction.guildId, data)
+                    await database.replaceOne({ serverID: interaction.guildId }, data)
                 } else {
                     const embed = new MessageEmbed().setTitle("Error")
                         .setColor('#FF0000')

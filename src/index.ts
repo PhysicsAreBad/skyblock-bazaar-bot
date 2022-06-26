@@ -1,8 +1,11 @@
-import 'dotenv/config'
+const path = require('path')
+require('dotenv').config({
+  path: path.resolve(__dirname, 'process.env')
+})
 
 import { Client } from '@zikeji/hypixel'
 
-import { open } from 'lmdb'
+import { MongoClient } from 'mongodb'
 
 import DiscordBot from './discord-bot'
 import { getFormattedDate } from './bazaar-utils'
@@ -11,11 +14,13 @@ main();
 
 async function main() {
     console.log("Bazaar Tracking Bot v1")
+    console.log(process.env)
     const client = new Client(process.env.HYPIXEL_TOKEN as string)
 
-    const database = open({
-        path: 'trading_database',
-    });
+    const databaseClient = new MongoClient(process.env.MONGODB as string)
+    await databaseClient.connect()
+
+    const database = databaseClient.db('Cluster0').collection('server_data');
 
     const discordBot = new DiscordBot(database);
 

@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { CommandInteraction, MessageEmbed, Permissions } from 'discord.js';
-
-import { RootDatabase } from 'lmdb';
+import { Collection, Document } from 'mongodb';
 
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
@@ -11,7 +10,7 @@ const command: DiscordCommand = {
             option.setName("role").setDescription("The role to use this bot").setRequired(true)
         )
         .setDefaultMemberPermissions(Permissions.FLAGS.ADMINISTRATOR),
-	async execute(interaction: CommandInteraction, database: RootDatabase) {
+	async execute(interaction: CommandInteraction, database: Collection<Document>) {
         if (interaction.guildId == null) return;
 
         const role = interaction.options.getRole("role", true);
@@ -26,7 +25,7 @@ const command: DiscordCommand = {
             return;
         }
 
-        if (!database.getKeys().asArray.includes(interaction.guildId)) {
+        if (!(await database.findOne({ serverID: interaction.guildId }))) {
             const embed = new MessageEmbed()
                 .setTitle('Error!')
                 .setColor('#ff0000')
@@ -36,9 +35,9 @@ const command: DiscordCommand = {
             return;
         }
 
-		const data: ServerData = database.get(interaction.guildId)
+		const data: ServerData = await database.findOne({ serverID: interaction.guildId }) as unknown as ServerData
         data.controlRole = role.id
-        await database.put(interaction.guildId, data)
+        await database.replaceOne({ serverID: interaction.guildId }, data)
         console.log(`Set the alert role to ${role.id} for guild ${interaction.guildId}`)
 
         const embed = new MessageEmbed().setTitle("Set Role")

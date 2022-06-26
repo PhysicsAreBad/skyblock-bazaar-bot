@@ -12,6 +12,7 @@ type AlertSchema = {
 }
 
 type ServerData = {
+    serverID: string,
     alertChannel: string,
     tickerChannel: string,
     controlRole: string | undefined

@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
-
-import { RootDatabase } from 'lmdb';
+import { Collection, Document } from 'mongodb';
 
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
@@ -10,13 +9,14 @@ const command: DiscordCommand = {
         .addChannelOption(option =>
             option.setName("channel").setDescription("The alert channel").setRequired(true)
         ),
-	async execute(interaction: CommandInteraction, database: RootDatabase) {
+	async execute(interaction: CommandInteraction, database: Collection<Document>) {
         if (interaction.guildId == null) return;
 
         const channel = interaction.options.getChannel("channel", true);
 
-		if (database.getKeys().asArray.includes(interaction.guildId)) {
-            const data: ServerData = database.get(interaction.guildId)
+		if (await database.findOne({ serverID: interaction.guildId })) {
+            const data: ServerData = await database.findOne({ serverID: interaction.guildId }) as unknown as ServerData
+
             if (!(interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR) 
                 || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
                 const embed = new MessageEmbed().setTitle("Error")
@@ -28,7 +28,7 @@ const command: DiscordCommand = {
                 return;
             }
             data.alertChannel = channel.id
-            await database.put(interaction.guildId, data)
+            await database.replaceOne({ serverID: interaction.guildId }, data)
         } else {
             if (!interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
                 const embed = new MessageEmbed().setTitle("Error")
@@ -41,13 +41,14 @@ const command: DiscordCommand = {
             }
 
             const data: ServerData = {
+                serverID: interaction.guildId,
                 tickerChannel: channel.id,
                 alertChannel: channel.id,
                 controlRole: undefined,
                 trackedItems: [],
                 alerts: []
             }
-            await database.put(interaction.guildId, data)
+            await database.insertOne(data)
             console.log(`Created data for guild ${interaction.guildId}`) 
         }
         console.log(`Set the alert channel to ${channel.id} for guild ${interaction.guildId}`)

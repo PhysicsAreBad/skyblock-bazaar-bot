@@ -1,13 +1,12 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { CommandInteraction, MessageEmbed} from 'discord.js';
-
-import { RootDatabase } from 'lmdb';
+import { Collection, Document } from 'mongodb';
 
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
         .setName("info")
         .setDescription("Info about Skyblock Bazaar Trader"),
-	async execute(interaction: CommandInteraction, database: RootDatabase) {
+	async execute(interaction: CommandInteraction, database: Collection<Document>) {
         if (interaction.guildId == null) return;
 
         const embed = new MessageEmbed().setTitle('Info').setDescription('Skyblock Bazaar Trader').addFields(

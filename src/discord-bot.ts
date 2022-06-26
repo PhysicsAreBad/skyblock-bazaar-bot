@@ -7,19 +7,19 @@ import { Client, TextChannel, Intents, MessageEmbed, Collection } from 'discord.
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v10'
 
-import { RootDatabase } from 'lmdb'
-
 import { Components } from '@zikeji/hypixel'
 import { ResultObject } from '@zikeji/hypixel/dist/util/ResultObject'
+
+import { Collection as MongoCollection, Document } from 'mongodb'
 
 import itemNames from './items.json'
 
 class DiscordBot {
     client: Client
-    database: RootDatabase
+    database: MongoCollection<Document>
     commands: Collection<string, DiscordCommand>
 
-    constructor(database: RootDatabase) {
+    constructor(database: MongoCollection<Document>) {
         console.log("Starting Discord Bot")
     
         this.client = new Client({
@@ -69,73 +69,76 @@ class DiscordBot {
     }
 
     updateServers(products: ResultObject<Components.Schemas.SkyBlockBazaarResponse, ["products"]>) {
-        this.database.getKeys().asArray.forEach(async server => {
-            const data: ServerData = this.database.get(server)
-            if (data.trackedItems.length == 0) return;
+        this.database.aggregate().forEach(document => {
+            const data = document as unknown as ServerData
+            if (document.trackedItems.length == 0) return;
 
-            const channel = await this.client.channels.fetch(data.tickerChannel)
-            if (channel != null) {
-                const textChannel = channel as TextChannel
-                textChannel.send(`TICKER UPDATE`)
-                data.trackedItems.forEach(async item => {
-                    const embed = new MessageEmbed()
-                        .setTitle(itemNames[item as keyof typeof itemNames])
-                        .setDescription(`Bazaar Ticker`)
-                        .addFields(
-                            {name: 'Buy Order Price:', value: `${products[item].quick_status.sellPrice}`, inline: true},
-                            {name: 'Sell Order Price:', value: `${products[item].quick_status.buyPrice}`, inline: true}
-                        )
-                        .setTimestamp()
-                        .setColor('#f0cc05')
-                    textChannel.send({embeds: [embed]})
-                    //Wait so bot does not get rate limited
-                    await new Promise(r => setTimeout(r, 20));
-                })
-            }
+            const action = async () => {
+                const channel = await this.client.channels.fetch(data.tickerChannel)
+                if (channel != null) {
+                    const textChannel = channel as TextChannel
+                    textChannel.send(`TICKER UPDATE`)
+                    data.trackedItems.forEach(async item => {
+                        const embed = new MessageEmbed()
+                            .setTitle(itemNames[item as keyof typeof itemNames])
+                            .setDescription(`Bazaar Ticker`)
+                            .addFields(
+                                {name: 'Buy Order Price:', value: `${products[item].quick_status.sellPrice}`, inline: true},
+                                {name: 'Sell Order Price:', value: `${products[item].quick_status.buyPrice}`, inline: true}
+                            )
+                            .setTimestamp()
+                            .setColor('#f0cc05')
+                        textChannel.send({embeds: [embed]})
+                        //Wait so bot does not get rate limited
+                        await new Promise(r => setTimeout(r, 20));
+                    })
+                }
 
-            const alertChannel = await this.client.channels.fetch(data.alertChannel);
-            if (alertChannel != null) {
-                const textChannel = alertChannel as TextChannel
-                data.alerts.forEach(async alert => {
-                    if (alert.isBuy) {
-                        if (products[alert.itemName].quick_status.sellPrice <= alert.amount) {
-                            if (data.controlRole)
-                                textChannel.send(`<@&${data.controlRole}>`)
-                            const embed = new MessageEmbed()
-                                .setTitle(`ALERT`)
-                                .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or below ${alert.amount}`)
-                                .addFields(
-                                    {name: 'Current Buy Price:', value: `${products[alert.itemName].quick_status.sellPrice}`, inline: true}
-                                )
-                                .setTimestamp()
-                                .setColor('#f0cc05')
-                            try {
-                                textChannel.send({embeds: [embed]})
-                            } catch (e) {
-                                console.error(e)
+                const alertChannel = await this.client.channels.fetch(data.alertChannel);
+                if (alertChannel != null) {
+                    const textChannel = alertChannel as TextChannel
+                    data.alerts.forEach(async alert => {
+                        if (alert.isBuy) {
+                            if (products[alert.itemName].quick_status.sellPrice <= alert.amount) {
+                                if (data.controlRole)
+                                    textChannel.send(`<@&${data.controlRole}>`)
+                                const embed = new MessageEmbed()
+                                    .setTitle(`ALERT`)
+                                    .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or below ${alert.amount}`)
+                                    .addFields(
+                                        {name: 'Current Buy Price:', value: `${products[alert.itemName].quick_status.sellPrice}`, inline: true}
+                                    )
+                                    .setTimestamp()
+                                    .setColor('#f0cc05')
+                                try {
+                                    textChannel.send({embeds: [embed]})
+                                } catch (e) {
+                                    console.error(e)
+                                }
+                            }
+                        } else {
+                            if (products[alert.itemName].quick_status.buyPrice >= alert.amount) {
+                                const embed = new MessageEmbed()
+                                    .setTitle(`ALERT`)
+                                    .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or above ${alert.amount}`)
+                                    .addFields(
+                                        {name: 'Current Sell Price:', value: `${products[alert.itemName].quick_status.buyPrice}`, inline: true}
+                                    )
+                                    .setTimestamp()
+                                    .setColor('#f0cc05')
+                                try {
+                                    textChannel.send({embeds: [embed]})
+                                } catch (e) {
+                                    console.error(e)
+                                }
                             }
                         }
-                    } else {
-                        if (products[alert.itemName].quick_status.buyPrice >= alert.amount) {
-                            const embed = new MessageEmbed()
-                                .setTitle(`ALERT`)
-                                .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or above ${alert.amount}`)
-                                .addFields(
-                                    {name: 'Current Sell Price:', value: `${products[alert.itemName].quick_status.buyPrice}`, inline: true}
-                                )
-                                .setTimestamp()
-                                .setColor('#f0cc05')
-                            try {
-                                textChannel.send({embeds: [embed]})
-                            } catch (e) {
-                                console.error(e)
-                            }
-                        }
-                    }
-                    //Wait so bot does not get rate limited
-                    await new Promise(r => setTimeout(r, 20));
-                })
+                        //Wait so bot does not get rate limited
+                        await new Promise(r => setTimeout(r, 20));
+                    })
+                }
             }
+            action()
         });
     }
 
