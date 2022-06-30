@@ -77,7 +77,11 @@ class DiscordBot {
                 const channel = await this.client.channels.fetch(data.tickerChannel)
                 if (channel != null) {
                     const textChannel = channel as TextChannel
-                    textChannel.send(`TICKER UPDATE`)
+                    try {
+                        textChannel.send(`TICKER UPDATE`)
+                    } catch (e) {
+                        console.error(e)
+                    }
                     data.trackedItems.forEach(async item => {
                         const embed = new MessageEmbed()
                             .setTitle(itemNames[item as keyof typeof itemNames])
@@ -88,7 +92,11 @@ class DiscordBot {
                             )
                             .setTimestamp()
                             .setColor('#f0cc05')
-                        textChannel.send({embeds: [embed]})
+                            try {
+                                textChannel.send({embeds: [embed]})
+                            } catch (e) {
+                                console.error(e)
+                            }
                         //Wait so bot does not get rate limited
                         await new Promise(r => setTimeout(r, 20));
                     })
@@ -98,10 +106,11 @@ class DiscordBot {
                 if (alertChannel != null) {
                     const textChannel = alertChannel as TextChannel
                     data.alerts.forEach(async alert => {
-                        if (alert.isBuy) {
-                            if (products[alert.itemName].quick_status.sellPrice <= alert.amount) {
-                                if (data.controlRole)
-                                    textChannel.send(`<@&${data.controlRole}>`)
+                        try {
+                            if (data.controlRole)
+                                await textChannel.send(`<@&${data.controlRole}>`)
+
+                            if (alert.isBuy && products[alert.itemName].quick_status.sellPrice <= alert.amount) {
                                 const embed = new MessageEmbed()
                                     .setTitle(`ALERT`)
                                     .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or below ${alert.amount}`)
@@ -110,14 +119,8 @@ class DiscordBot {
                                     )
                                     .setTimestamp()
                                     .setColor('#f0cc05')
-                                try {
-                                    textChannel.send({embeds: [embed]})
-                                } catch (e) {
-                                    console.error(e)
-                                }
-                            }
-                        } else {
-                            if (products[alert.itemName].quick_status.buyPrice >= alert.amount) {
+                                await textChannel.send({embeds: [embed]})
+                            } else if (!alert.isBuy && products[alert.itemName].quick_status.buyPrice >= alert.amount){
                                 const embed = new MessageEmbed()
                                     .setTitle(`ALERT`)
                                     .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or above ${alert.amount}`)
@@ -126,15 +129,13 @@ class DiscordBot {
                                     )
                                     .setTimestamp()
                                     .setColor('#f0cc05')
-                                try {
-                                    textChannel.send({embeds: [embed]})
-                                } catch (e) {
-                                    console.error(e)
-                                }
+                                await textChannel.send({embeds: [embed]})
                             }
+                            //Wait so bot does not get rate limited
+                            await new Promise(r => setTimeout(r, 20));
+                        } catch (exception) {
+                            console.error(exception)
                         }
-                        //Wait so bot does not get rate limited
-                        await new Promise(r => setTimeout(r, 20));
                     })
                 }
             }
