@@ -14,7 +14,6 @@ main();
 
 async function main() {
     console.log("Bazaar Tracking Bot v1")
-    console.log(process.env)
     const client = new Client(process.env.HYPIXEL_TOKEN as string)
 
     const databaseClient = new MongoClient(process.env.MONGODB as string)

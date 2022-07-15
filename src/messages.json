@@ -1,0 +1,23 @@
+{
+    "error": {
+        "color": "#FF0000",
+        "title": "Error!",
+        "adminError": "You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.",
+        "adminOnlyError": "You must be an administrator to use this command.",
+        "setTickerError": "You must set your ticker channel before using this command! Use `/settickerchannel`",
+        "noMessagePerms": "The bot does not have permissions to use that channel.",
+        "notValidItem": "That is not a valid item name!",
+        "notValidAlertID": "That is not a valid alert id! Check `/alert list`",
+        "notBeingTracked": "That item was not being tracked!",
+        "cmdError": "There was an error while executing this command!"
+    },
+    "list": {
+        "color": "#a810b3"
+    },
+    "success": {
+        "color" : "#00FF00"
+    },
+    "tracker" : {
+        "color": "#f0cc05"
+    }
+}

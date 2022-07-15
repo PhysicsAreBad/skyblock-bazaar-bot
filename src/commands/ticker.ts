@@ -1,9 +1,11 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
+import { ColorResolvable, CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
 import { Collection, Document } from 'mongodb';
 
 import { getKeyforValue } from '../bazaar-utils'
 import itemNames from '../items.json'
+
+import messages from '../messages.json'
 
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
@@ -28,9 +30,9 @@ const command: DiscordCommand = {
         const options = interaction.options;
         if (!(await database.findOne({ serverID: interaction.guildId }))) {
             const embed = new MessageEmbed()
-                .setTitle('Error!')
-                .setColor('#ff0000')
-                .setDescription('You must set your ticker channel before using this command! Use `/settickerchannel`')
+                .setTitle(messages.error.title)
+                .setColor(messages.error.color as ColorResolvable)
+                .setDescription(messages.error.setTickerError)
 
             interaction.reply({embeds: [embed], ephemeral: true})
             return;
@@ -39,9 +41,9 @@ const command: DiscordCommand = {
 
         if (!(interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR) 
         || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
-            const embed = new MessageEmbed().setTitle("Error")
-                .setColor('#FF0000')
-                .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
+            const embed = new MessageEmbed().setTitle(messages.error.title)
+                .setColor(messages.error.color as ColorResolvable)
+                .setDescription(messages.error.adminError)
                 .setTimestamp()
 
             interaction.reply({ embeds: [embed], ephemeral: true})
@@ -59,9 +61,9 @@ const command: DiscordCommand = {
                     if (name != undefined) {
                         productName = name
                     } else {
-                        const embed = new MessageEmbed().setTitle("Error")
-                            .setColor('#FF0000')
-                            .setDescription('That is not a valid item!')
+                        const embed = new MessageEmbed().setTitle(messages.error.title)
+                            .setColor(messages.error.color as ColorResolvable)
+                            .setDescription(messages.error.notValidItem)
                             .setTimestamp()
                         interaction.reply({ embeds: [embed], ephemeral: true})
                         return;
@@ -73,7 +75,7 @@ const command: DiscordCommand = {
                 data.trackedItems.push(productName)
                 await database.replaceOne({ serverID: interaction.guildId }, data)
                 const embed = new MessageEmbed().setTitle("Added Item")
-                            .setColor('#00FF00')
+                            .setColor(messages.success.color as ColorResolvable)
                             .setDescription(`Added ${formattedName} to the tracked items list`)
                             .setTimestamp()
                 interaction.reply({ embeds: [embed], ephemeral: true})
@@ -86,9 +88,9 @@ const command: DiscordCommand = {
                     if (name != undefined) {
                         productName = name
                     } else {
-                        const embed = new MessageEmbed().setTitle("Error")
-                            .setColor('#FF0000')
-                            .setDescription('That is not a valid item!')
+                        const embed = new MessageEmbed().setTitle(messages.error.title)
+                            .setColor(messages.error.color as ColorResolvable)
+                            .setDescription(messages.error.notValidItem)
                             .setTimestamp()
                         interaction.reply({ embeds: [embed], ephemeral: true})
                         return;
@@ -101,21 +103,21 @@ const command: DiscordCommand = {
                     data.trackedItems.splice(data.trackedItems.indexOf(productName), 1)
                     await database.replaceOne({ serverID: interaction.guildId }, data)
                     const embed = new MessageEmbed().setTitle("Removed Item")
-                            .setColor('#00FF00')
+                            .setColor(messages.success.color as ColorResolvable)
                             .setDescription(`Removed ${formattedName} from the tracked items list`)
                             .setTimestamp()
                     interaction.reply({ embeds: [embed], ephemeral: true})
                 } else {
-                    const embed = new MessageEmbed().setTitle("Error")
-                            .setColor('#FF0000')
-                            .setDescription(`${formattedName} was not being tracked!`)
+                    const embed = new MessageEmbed().setTitle(messages.error.title)
+                            .setColor(messages.error.color as ColorResolvable)
+                            .setDescription(messages.error.notBeingTracked)
                             .setTimestamp()
                     interaction.reply({ embeds: [embed], ephemeral: true})
                 }
                 break
             case 'list':
                 const embed2 = new MessageEmbed().setTitle("Items being tracked")
-                            .setColor('#a810b3')
+                            .setColor(messages.list.color as ColorResolvable)
                             .setDescription(data.trackedItems.length > 1 ? data.trackedItems.map(item => itemNames[item as keyof typeof itemNames])
                             .reduce((previousValue, currentValue) => {
                                 return previousValue += ", " + currentValue;
