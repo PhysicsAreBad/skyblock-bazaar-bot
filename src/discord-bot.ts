@@ -93,7 +93,7 @@ class DiscordBot {
                             .setTimestamp()
                             .setColor('#f0cc05')
                             try {
-                                textChannel.send({embeds: [embed]})
+                                await textChannel.send({embeds: [embed]})
                             } catch (e) {
                                 console.error(e)
                             }
@@ -107,10 +107,9 @@ class DiscordBot {
                     const textChannel = alertChannel as TextChannel
                     data.alerts.forEach(async alert => {
                         try {
-                            if (data.controlRole)
-                                await textChannel.send(`<@&${data.controlRole}>`)
-
                             if (alert.isBuy && products[alert.itemName].quick_status.sellPrice <= alert.amount) {
+                                if (data.controlRole)
+                                    await textChannel.send(`<@&${data.controlRole}>`)
                                 const embed = new MessageEmbed()
                                     .setTitle(`ALERT`)
                                     .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or below ${alert.amount}`)
@@ -121,6 +120,8 @@ class DiscordBot {
                                     .setColor('#f0cc05')
                                 await textChannel.send({embeds: [embed]})
                             } else if (!alert.isBuy && products[alert.itemName].quick_status.buyPrice >= alert.amount){
+                                if (data.controlRole)
+                                    await textChannel.send(`<@&${data.controlRole}>`)
                                 const embed = new MessageEmbed()
                                     .setTitle(`ALERT`)
                                     .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or above ${alert.amount}`)
