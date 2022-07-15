@@ -10,9 +10,8 @@ export function getFormattedDate() {
 
 export function getKeyforValue(value: string): string | undefined {
     for (let key in itemList) {
-        if(itemList[key as keyof typeof itemList] == value) {
+        if(itemList[key as keyof typeof itemList].toLowerCase() == value.toLowerCase()) {
             return key;
         }
     }
-    return undefined;
 }

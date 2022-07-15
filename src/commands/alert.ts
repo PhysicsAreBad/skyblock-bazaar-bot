@@ -66,8 +66,6 @@ const command: DiscordCommand = {
                 let isBuy = options.getBoolean("isbuy", true)
                 let amount = options.getNumber("amount", true)
 
-                let formattedName = productName;
-
                 if (!(productName in itemNames)) {
                     const name = getKeyforValue(productName)
                     if (name != undefined) {
@@ -80,9 +78,9 @@ const command: DiscordCommand = {
                         interaction.reply({ embeds: [embed], ephemeral: true})
                         return;
                     }
-                } else {
-                    formattedName = itemNames[productName as keyof typeof itemNames]
                 }
+
+                let formattedName = itemNames[productName as keyof typeof itemNames]
 
                 let uuid = generateUUID();
 

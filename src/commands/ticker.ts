@@ -54,8 +54,6 @@ const command: DiscordCommand = {
             case 'add':
                 productName = options.getString("name", true)
 
-                formattedName = productName;
-
                 if (!(productName in itemNames)) {
                     const name = getKeyforValue(productName)
                     if (name != undefined) {
@@ -68,23 +66,21 @@ const command: DiscordCommand = {
                         interaction.reply({ embeds: [embed], ephemeral: true})
                         return;
                     }
-                } else {
-                    formattedName = itemNames[productName as keyof typeof itemNames]
                 }
+
+                formattedName = itemNames[productName as keyof typeof itemNames]
 
                 data.trackedItems.push(productName)
                 await database.replaceOne({ serverID: interaction.guildId }, data)
                 const embed = new MessageEmbed().setTitle("Added Item")
                             .setColor('#00FF00')
-                            .setDescription(`Added item ${formattedName} to the tracked items list`)
+                            .setDescription(`Added ${formattedName} to the tracked items list`)
                             .setTimestamp()
                 interaction.reply({ embeds: [embed], ephemeral: true})
                 break
             case 'remove':
                 productName = options.getString("name", true)
 
-                formattedName = productName;
-
                 if (!(productName in itemNames)) {
                     const name = getKeyforValue(productName)
                     if (name != undefined) {
@@ -97,16 +93,16 @@ const command: DiscordCommand = {
                         interaction.reply({ embeds: [embed], ephemeral: true})
                         return;
                     }
-                } else {
-                    formattedName = itemNames[productName as keyof typeof itemNames]
                 }
+
+                formattedName = itemNames[productName as keyof typeof itemNames]
 
                 if (data.trackedItems.includes(productName)) {
                     data.trackedItems.splice(data.trackedItems.indexOf(productName), 1)
                     await database.replaceOne({ serverID: interaction.guildId }, data)
                     const embed = new MessageEmbed().setTitle("Removed Item")
                             .setColor('#00FF00')
-                            .setDescription(`Removed item ${formattedName} from the tracked items list`)
+                            .setDescription(`Removed ${formattedName} from the tracked items list`)
                             .setTimestamp()
                     interaction.reply({ embeds: [embed], ephemeral: true})
                 } else {
