@@ -1,6 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
+import { ColorResolvable, CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
 import { Collection, Document } from 'mongodb';
+
+import messages from '../messages.json'
 
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
@@ -19,9 +21,19 @@ const command: DiscordCommand = {
             
             if (!(interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR) 
                 || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
-                const embed = new MessageEmbed().setTitle("Error")
-                    .setColor('#FF0000')
-                    .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
+                const embed = new MessageEmbed().setTitle(messages.error.title)
+                    .setColor(messages.error.color as ColorResolvable)
+                    .setDescription(messages.error.adminError)
+                    .setTimestamp()
+
+                interaction.reply({ embeds: [embed], ephemeral: true})
+                return;
+            }
+
+            if(!interaction.guild?.me?.permissionsIn(channel.id).has(Permissions.FLAGS.SEND_MESSAGES)) {
+                const embed = new MessageEmbed().setTitle(messages.error.title)
+                    .setColor(messages.error.color as ColorResolvable)
+                    .setDescription(messages.error.noMessagePerms)
                     .setTimestamp()
 
                 interaction.reply({ embeds: [embed], ephemeral: true})
@@ -33,9 +45,19 @@ const command: DiscordCommand = {
         } else {
 
             if (!interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR)) {
-                const embed = new MessageEmbed().setTitle("Error")
-                    .setColor('#FF0000')
-                    .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
+                const embed = new MessageEmbed().setTitle(messages.error.title)
+                    .setColor(messages.error.color as ColorResolvable)
+                    .setDescription(messages.error.adminError)
+                    .setTimestamp()
+
+                interaction.reply({ embeds: [embed], ephemeral: true})
+                return;
+            }
+
+            if(!interaction.guild?.me?.permissionsIn(channel.id).has(Permissions.FLAGS.SEND_MESSAGES)) {
+                const embed = new MessageEmbed().setTitle(messages.error.title)
+                    .setColor(messages.error.color as ColorResolvable)
+                    .setDescription(messages.error.noMessagePerms)
                     .setTimestamp()
 
                 interaction.reply({ embeds: [embed], ephemeral: true})
@@ -56,7 +78,7 @@ const command: DiscordCommand = {
         }
         console.log(`Set the ticker channel to ${channel.id} for guild ${channel.id}`)
         const embed = new MessageEmbed().setTitle("Set Ticker Channel")
-            .setColor('#00FF00')
+            .setColor(messages.success.color as ColorResolvable)
             .addFields(
                 { name: 'Channel Name', value: channel.name, inline: true},
                 { name: 'Channel ID', value: channel.id, inline: true})

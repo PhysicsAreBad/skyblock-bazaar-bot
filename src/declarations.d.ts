@@ -22,5 +22,5 @@ type ServerData = {
 
 type DiscordCommand = {
     data: SlashCommandBuilder
-    execute: function(CommandInteraction, RootDatabase): void
+    execute: function(CommandInteraction, RootDatabase, DiscordBot): void
 }

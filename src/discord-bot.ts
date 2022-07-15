@@ -3,7 +3,7 @@ import 'dotenv/config'
 import { promises as fs } from 'fs';
 import path from 'path';
 
-import { Client, TextChannel, Intents, MessageEmbed, Collection } from 'discord.js'
+import { Client, TextChannel, Intents, MessageEmbed, Collection, ColorResolvable } from 'discord.js'
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v10'
 
@@ -13,6 +13,7 @@ import { ResultObject } from '@zikeji/hypixel/dist/util/ResultObject'
 import { Collection as MongoCollection, Document } from 'mongodb'
 
 import itemNames from './items.json'
+import messages from './messages.json'
 
 class DiscordBot {
     client: Client
@@ -55,13 +56,13 @@ class DiscordBot {
             if (command == null) return;
 
 	        try {
-		        await command.execute(interaction, this.database);
+		        await command.execute(interaction, this.database, this);
 	        } catch (error) {
 		        console.error(error);
                 const embed = new MessageEmbed()
-                    .setTitle("Error")
-                    .setDescription("There was an error while executing this command!")
-                    .setColor('#ff0000')
+                    .setTitle(messages.error.title)
+                    .setDescription(messages.error.cmdError)
+                    .setColor(messages.error.color as ColorResolvable)
                     .setTimestamp()
 		        interaction.reply({ embeds: [embed], ephemeral: true });
 	        } 
@@ -91,9 +92,9 @@ class DiscordBot {
                                 {name: 'Sell Order Price:', value: `${products[item].quick_status.buyPrice}`, inline: true}
                             )
                             .setTimestamp()
-                            .setColor('#f0cc05')
+                            .setColor(messages.tracker.color as ColorResolvable)
                             try {
-                                textChannel.send({embeds: [embed]})
+                                await textChannel.send({embeds: [embed]})
                             } catch (e) {
                                 console.error(e)
                             }
@@ -107,10 +108,9 @@ class DiscordBot {
                     const textChannel = alertChannel as TextChannel
                     data.alerts.forEach(async alert => {
                         try {
-                            if (data.controlRole)
-                                await textChannel.send(`<@&${data.controlRole}>`)
-
                             if (alert.isBuy && products[alert.itemName].quick_status.sellPrice <= alert.amount) {
+                                if (data.controlRole)
+                                    await textChannel.send(`<@&${data.controlRole}>`)
                                 const embed = new MessageEmbed()
                                     .setTitle(`ALERT`)
                                     .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or below ${alert.amount}`)
@@ -118,9 +118,11 @@ class DiscordBot {
                                         {name: 'Current Buy Price:', value: `${products[alert.itemName].quick_status.sellPrice}`, inline: true}
                                     )
                                     .setTimestamp()
-                                    .setColor('#f0cc05')
+                                    .setColor(messages.tracker.color as ColorResolvable)
                                 await textChannel.send({embeds: [embed]})
                             } else if (!alert.isBuy && products[alert.itemName].quick_status.buyPrice >= alert.amount){
+                                if (data.controlRole)
+                                    await textChannel.send(`<@&${data.controlRole}>`)
                                 const embed = new MessageEmbed()
                                     .setTitle(`ALERT`)
                                     .setDescription(`${itemNames[alert.itemName as keyof typeof itemNames]} is at or above ${alert.amount}`)
@@ -128,7 +130,7 @@ class DiscordBot {
                                         {name: 'Current Sell Price:', value: `${products[alert.itemName].quick_status.buyPrice}`, inline: true}
                                     )
                                     .setTimestamp()
-                                    .setColor('#f0cc05')
+                                    .setColor(messages.tracker.color as ColorResolvable)
                                 await textChannel.send({embeds: [embed]})
                             }
                             //Wait so bot does not get rate limited

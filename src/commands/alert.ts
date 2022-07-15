@@ -1,11 +1,14 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
+import { ColorResolvable, CommandInteraction, GuildMemberRoleManager, MessageEmbed, Permissions } from 'discord.js';
 import { Collection, Document } from 'mongodb';
+import DiscordBot from 'src/discord-bot';
 
 import { v4 as generateUUID } from 'uuid'
 
 import { getKeyforValue } from '../bazaar-utils'
 import itemNames from '../items.json'
+
+import messages from '../messages.json'
 
 const command: DiscordCommand = {
 	data: new SlashCommandBuilder()
@@ -40,9 +43,9 @@ const command: DiscordCommand = {
         const options = interaction.options;
         if (!(await database.findOne({ serverID: interaction.guildId }))) {
             const embed = new MessageEmbed()
-                .setTitle('Error!')
-                .setColor('#ff0000')
-                .setDescription('You must set your ticker channel before using this command! Use `/settickerchannel`')
+                .setTitle(messages.error.title)
+                .setColor(messages.error.color as ColorResolvable)
+                .setDescription(messages.error.setTickerError)
 
             interaction.reply({embeds: [embed], ephemeral: true})
             return;
@@ -51,9 +54,9 @@ const command: DiscordCommand = {
 
         if (!(interaction.memberPermissions?.has(Permissions.FLAGS.ADMINISTRATOR) 
         || (data.controlRole ? (interaction.member?.roles as GuildMemberRoleManager).cache.has(data.controlRole) : false))) {
-            const embed = new MessageEmbed().setTitle("Error")
-                .setColor('#FF0000')
-                .setDescription('You must be either an administrator or given a role to use this bot. If not configured, ask an administrator to use `/setrole` to set the role for bot use.')
+            const embed = new MessageEmbed().setTitle(messages.error.title)
+                .setColor(messages.error.color as ColorResolvable)
+                .setDescription(messages.error.adminError)
                 .setTimestamp()
 
             interaction.reply({ embeds: [embed], ephemeral: true})
@@ -66,23 +69,21 @@ const command: DiscordCommand = {
                 let isBuy = options.getBoolean("isbuy", true)
                 let amount = options.getNumber("amount", true)
 
-                let formattedName = productName;
-
                 if (!(productName in itemNames)) {
                     const name = getKeyforValue(productName)
                     if (name != undefined) {
                         productName = name
                     } else {
-                        const embed = new MessageEmbed().setTitle("Error")
-                            .setColor('#FF0000')
-                            .setDescription('That is not a valid item!')
+                        const embed = new MessageEmbed().setTitle(messages.error.title)
+                            .setColor(messages.error.color as ColorResolvable)
+                            .setDescription(messages.error.notValidItem)
                             .setTimestamp()
                         interaction.reply({ embeds: [embed], ephemeral: true})
                         return;
                     }
-                } else {
-                    formattedName = itemNames[productName as keyof typeof itemNames]
                 }
+
+                let formattedName = itemNames[productName as keyof typeof itemNames]
 
                 let uuid = generateUUID();
 
@@ -95,7 +96,7 @@ const command: DiscordCommand = {
 
                 await database.replaceOne({ serverID: interaction.guildId }, data)
                 const embed = new MessageEmbed().setTitle("Added Alert")
-                            .setColor('#00FF00')
+                            .setColor(messages.success.color as ColorResolvable)
                             .addField('UUID', uuid, true)
                             .addField('Item', formattedName, true)
                             .addField('Amount', `${amount}`, true)
@@ -109,22 +110,22 @@ const command: DiscordCommand = {
                 if (data.alerts.find(entry => entry.uuid == givenUUID) != undefined) {
                     data.alerts.splice(data.alerts.indexOf(data.alerts.find(entry => entry.uuid == givenUUID) as AlertSchema), 1)
                     const embed = new MessageEmbed().setTitle("Removed Alert")
-                        .setColor('#00FF00')
+                        .setColor(messages.success.color as ColorResolvable)
                         .setDescription(`Deleted alert ${givenUUID}`)
                         .setTimestamp()
                     interaction.reply({ embeds: [embed], ephemeral: true})
                     await database.replaceOne({ serverID: interaction.guildId }, data)
                 } else {
-                    const embed = new MessageEmbed().setTitle("Error")
-                        .setColor('#FF0000')
-                        .setDescription('That is not a valid alert id! Check `/alert list`')
+                    const embed = new MessageEmbed().setTitle(messages.error.title)
+                        .setColor(messages.error.color as ColorResolvable)
+                        .setDescription(messages.error.notValidAlertID)
                         .setTimestamp()
                     interaction.reply({ embeds: [embed], ephemeral: true})
                 }
                 break
             case 'list':
                 const embed2 = new MessageEmbed().setTitle("Active Alerts")
-                            .setColor('#a810b3')
+                            .setColor(messages.list.color as ColorResolvable)
                             .setFields(data.alerts.map(entry => {
                                 return {
                                     name: `${entry.isBuy ? 'Buy' : 'Sell'} ${itemNames[entry.itemName as keyof typeof itemNames]} ${entry.amount}`,
