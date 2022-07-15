@@ -16,7 +16,8 @@ main();
 
 async function main() {
     console.log("Bazaar Tracking Bot v1.1")
-    webServer()
+    if (process.env.PORT) //Make app heroku complient the hard way
+        webServer()
     const client = new Client(process.env.HYPIXEL_TOKEN as string)
 
     const databaseClient = new MongoClient(process.env.MONGODB as string)
