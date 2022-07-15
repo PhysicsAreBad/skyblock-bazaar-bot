@@ -13,7 +13,7 @@ import { getFormattedDate } from './bazaar-utils'
 main();
 
 async function main() {
-    console.log("Bazaar Tracking Bot v1")
+    console.log("Bazaar Tracking Bot v1.1")
     const client = new Client(process.env.HYPIXEL_TOKEN as string)
 
     const databaseClient = new MongoClient(process.env.MONGODB as string)

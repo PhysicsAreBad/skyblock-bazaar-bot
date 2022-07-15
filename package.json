@@ -1,6 +1,6 @@
 {
   "name": "skyblock-bazaar-bot",
-  "version": "1.0.0",
+  "version": "1.1",
   "description": "Skyblock bazaar tracking discord bot",
   "main": "index.js",
   "scripts": {
