@@ -10,10 +10,13 @@ import { MongoClient } from 'mongodb'
 import DiscordBot from './discord-bot'
 import { getFormattedDate } from './bazaar-utils'
 
+import webServer from './webServer'
+
 main();
 
 async function main() {
     console.log("Bazaar Tracking Bot v1.1")
+    webServer()
     const client = new Client(process.env.HYPIXEL_TOKEN as string)
 
     const databaseClient = new MongoClient(process.env.MONGODB as string)
