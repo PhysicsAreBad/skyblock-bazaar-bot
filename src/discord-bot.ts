@@ -89,7 +89,8 @@ class DiscordBot {
                             .setDescription(`Bazaar Ticker`)
                             .addFields(
                                 {name: 'Buy Order Price:', value: `${products[item].quick_status.sellPrice}`, inline: true},
-                                {name: 'Sell Order Price:', value: `${products[item].quick_status.buyPrice}`, inline: true}
+                                {name: 'Sell Order Price:', value: `${products[item].quick_status.buyPrice}`, inline: true},
+                                {name: 'Margin', value: `${products[item].quick_status.buyPrice - products[item].quick_status.sellPrice}`, inline: true}
                             )
                             .setTimestamp()
                             .setColor(messages.tracker.color as ColorResolvable)
